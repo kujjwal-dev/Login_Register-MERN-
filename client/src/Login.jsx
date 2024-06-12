@@ -2,27 +2,36 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        axios.post('http://localhost:3001/login', { email, password })
-            .then(result => {
-                console.log(result);
-                if (result.data.message === "Success") {
-                    navigate("/home");
-                } else {
-                    setErrorMessage(result.data.message);
-                }
-            })
-            .catch(err => {
-                console.log(err);
-                setErrorMessage("An error occurred. Please try again.");
+
+        // Basic form validation
+        if (!email || !password) {
+            setErrorMessage('Please fill in both fields.');
+            return;
+        }
+
+        try {
+            const result = await axios.post('http://localhost:3001/login', { email, password },{
+                withCredentials:true,
             });
+            console.log(result);
+            if (result.data.message === "Success") {
+                navigate("/home");
+            } else {
+                setErrorMessage(result.data.message);
+            }
+        } catch (err) {
+            console.log(err);
+            setErrorMessage("An error occurred. Please try again.");
+        }
     }
 
     return (
@@ -41,7 +50,8 @@ const Login = () => {
                             name='email'
                             className='form-control rounded-0'
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)} />
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
                     </div>
                     <div className='mb-3'>
                         <label htmlFor='password'>
@@ -54,18 +64,23 @@ const Login = () => {
                             name='password'
                             className='form-control rounded-0'
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)} />
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
                     {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
                     <button type='submit' className='btn btn-success w-100 rounded-0'>
                         Login
                     </button>
                 </form>
-                <p>Register an account</p>
-                <Link to="/forgot-password">Forgot password</Link>
-                <Link to="/register" className='btn btn-default border w-100 bg-light rounded-0 text-decoration-none'>
-                    Sign Up
-                </Link>
+                <div className="mt-3">
+                    <p className="mb-1">Register an account</p>
+                    <Link to="/register" className='btn btn-default border w-100 bg-light rounded-0 text-decoration-none mb-1'>
+                        Sign Up
+                    </Link>
+                    <Link to="/forgot-password" className='text-decoration-none'>
+                        Forgot password?
+                    </Link>
+                </div>
             </div>
         </div>
     );
